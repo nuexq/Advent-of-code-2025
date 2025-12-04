@@ -6,39 +6,37 @@ let input = `
 `;
 
 let banks = input.trim().split("\n");
-let results: number[] = [];
 
-banks.forEach(bank => {
-  let firstLargest: number | undefined;
-  let secondLargest: number | undefined;
-  let combinedNumber: number | undefined;
+function LargestJoltage(
+  bank: string,
+  depth: number,
+  acc: number[] = []
+): number[] {
+  if (depth === 0) return acc;
 
-  for (let i = 0; i < bank.length; i++) {
-    const digit = Number(bank[i]);
+  const searchLen = bank.length - depth + 1;
 
-    if (firstLargest === undefined) {
-      firstLargest = digit;
-      continue;
-    }
+  const window = bank.slice(0, searchLen).split("").map(Number);
 
-    if (secondLargest === undefined) {
-      secondLargest = digit;
-    } else {
-      if (digit > secondLargest) {
-        secondLargest = digit;
-      }
-    }
+  const largest = Math.max(...window);
 
-    combinedNumber = (firstLargest * 10) + secondLargest;
+  const idx = window.indexOf(largest);
 
-    if (digit > firstLargest) {
-      firstLargest = digit;
-      secondLargest = undefined;
-      continue;
-    }
-  }
+  return LargestJoltage(
+    bank.slice(idx + 1),
+    depth - 1,
+    [...acc, largest]
+  );
+}
 
-  results.push(combinedNumber!);
-});
 
-console.log("Part 1: " + results.reduce((a, b) => a + b, 0));
+function solve(depth: number) {
+  const sums = banks
+    .map(bank => Number(LargestJoltage(bank, depth).join("")))
+    .reduce((a, b) => a + b, 0);
+
+  return sums;
+}
+
+console.log(`Part 1: ${solve(2)}`)
+console.log(`Part 2: ${solve(12)}`)
