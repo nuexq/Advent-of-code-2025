@@ -1,7 +1,7 @@
 let
   lib = import <nixpkgs/lib>;
-  inherit (lib) count strings any;
-  inherit (builtins) map filter elemAt fromJSON;
+  inherit (lib) count strings any range unique;
+  inherit (builtins) map filter elemAt fromJSON length concatMap;
 
   input = ''
     3-5
@@ -23,15 +23,23 @@ let
   ranges = elemAt cleanedLines 0;
   avaible_ingredient = elemAt cleanedLines 1;
 
-  result = count (x: x) (map (ing:
+  part1 = count (x: x) (map (ing:
     let
       avaible = any (range:
-        let list = strings.splitString "-" range;
-        in if ((fromJSON (elemAt list 0)) <= (fromJSON ing)
-          && (fromJSON (elemAt list 1)) >= (fromJSON ing)) then
+        let parts = strings.splitString "-" range;
+        in if ((fromJSON (elemAt parts 0)) <= (fromJSON ing)
+          && (fromJSON (elemAt parts 1)) >= (fromJSON ing)) then
           true
         else
           false) ranges;
     in avaible) avaible_ingredient);
 
-in { part1 = result; }
+  part2 = length (unique (concatMap (r:
+    let
+      parts = strings.splitString "-" r;
+      from = fromJSON (elemAt parts 0);
+      to = fromJSON (elemAt parts 1);
+    in range from to) ranges));
+
+in { inherit part1 part2; }
+
