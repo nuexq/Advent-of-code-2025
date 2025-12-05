@@ -1,15 +1,15 @@
-# aoc-25
+# Advent of Code 2025
 
-To install dependencies:
+## Usage
 
-```bash
-bun install
+`typescript`
+```sh
+bun run ./src/day_{num}.ts
 ```
 
-To run:
-
-```bash
-bun run index.ts
+`nix`
+```sh
+nix-instantiate --eval ./src/day_{num}.nix
+# or
+nix eval -f ./src/day_{num}.nix
 ```
-
-This project was created using `bun init` in bun v1.3.2. [Bun](https://bun.com) is a fast all-in-one JavaScript runtime.
