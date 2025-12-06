@@ -1,3 +1,4 @@
+# it works
 let
   lib = import <nixpkgs/lib>;
   inherit (lib) strings foldl' init last range substring stringToCharacters;
