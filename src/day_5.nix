@@ -14,7 +14,7 @@ let
     8
     11
     17
-    32  
+    32
   '';
 
   cleanedLines = map (line: filter (s: s != "") (strings.splitString "\n" line))
