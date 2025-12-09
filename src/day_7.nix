@@ -2,8 +2,7 @@ let
   lib = import <nixpkgs/lib>;
   inherit (lib) strings range toInt lists;
   inherit (builtins)
-    map filter length foldl' elemAt toString attrNames concatMap listToAttrs
-    concatStringsSep;
+    map filter length foldl' elemAt toString attrNames concatMap attrValues;
 
   input = builtins.readFile ./input.txt;
 
@@ -13,39 +12,54 @@ let
 
   SColPos = lists.findFirstIndex (c: c == "S") null (builtins.head grid);
 
-  startPoint = "0-${toString SColPos}";
-
-  simulate = foldl' (acc: i:
+  simulate = foldl' (acc: row:
     let
       beams = attrNames acc.beams;
-      newBeams = concatMap (beam:
-        let
-          beamPos = strings.splitString "-" beam;
-          row = (toInt (elemAt beamPos 0)) + 1;
-          col = toInt (elemAt beamPos 1);
-          nextBeamPos = [ row col ];
 
+      rawBeams = concatMap (beam:
+        let
+          col = toInt beam;
+          val = acc.beams.${toString col};
           nextCell = elemAt (elemAt grid row) col;
-        in if nextCell != "^" then
-          [ (concatStringsSep "-" (map toString nextBeamPos)) ]
-        else [
-          "${toString row}-${toString (col - 1)}"
-          "${toString row}-${toString (col + 1)}"
+        in if nextCell != "^" then [{
+          col = col;
+          val = val;
+        }] else [
+          {
+            col = col + 1;
+            val = val;
+          }
+          {
+            col = col - 1;
+            val = val;
+          }
         ]) beams;
 
-      newCount = (length newBeams) - (length beams);
-      newBeamAttr = listToAttrs (map (x: {
-        name = x;
-        value = true;
-      }) newBeams);
+      newCount = length rawBeams - length beams;
+
+      mergedBeams = foldl' (m: beam:
+        let key = toString beam.col;
+        in m // { "${key}" = ((m.${key} or 0) + beam.val); }) { } rawBeams;
+
+      isLastRow = row == height;
+      newTimelines = if isLastRow then
+        foldl' (acc: v: acc + v) 0 (attrValues mergedBeams)
+      else
+        acc.timeLines;
+
     in {
-      beams = newBeamAttr;
+      beams = mergedBeams;
       counter = acc.counter + newCount;
+      timelines = newTimelines;
     }) {
-      beams = { "${startPoint}" = true; };
+      beams = { "${toString SColPos}" = 1; };
       counter = 0;
+      timelines = 0;
     } (range 1 height);
 
-  part1 = simulate.counter;
+  simulation = simulate;
 
-in { inherit part1; }
+in {
+  part1 = simulation.counter;
+  part2 = simulation.timelines;
+}
